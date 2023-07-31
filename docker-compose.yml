@@ -7,6 +7,8 @@ volumes:
     name: rstudio-home-data
   rstudio-tmp-data:
     name: rstudio-tmp-data
+  openldap_data:
+    driver: local
 
 services:
   
@@ -204,3 +206,48 @@ services:
       - ./phoebe:/tmp
     entrypoint: ["sh", "/tmp/load_phoebe.sh" ]
     
+  openldap:
+    image: bitnami/openldap:latest
+    container_name: openldap
+    environment:
+      - LDAP_ORGANISATION=My Organization
+      - LDAP_DOMAIN=example.org
+      - LDAP_ADMIN_PASSWORD=password
+      - LDAP_ROOT_PASSWORD=password
+      - LDAP_PORT_NUMBER=389
+      - ALLOW_EMPTY_PASSWORD=yes
+      - LDAP_TLS=no
+      - LDAP_CUSTOM_LDIF_DIR=/tmp/ldifs
+    ports:
+      - "389:389"
+      - "636:636"
+    volumes:
+      - ./ldap-init:/tmp/ldifs
+      - openldap_data:/bitnami/openldap
+
+  phpldapadmin:
+    image: osixia/phpldapadmin:latest
+    container_name: phpldapadmin
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: "openldap"
+      PHPLDAPADMIN_HTTPS: "false"
+    ports:
+      - "8088:80"
+    depends_on:
+      - openldap
+
+#
+# the ohdsi containers come with very little tooling inside
+# network-multitool is a convenient addition to have
+# one use is to run nc (netcat) in multitool, and make the network stream available on the host, e.g.
+#   tcpserver 0 5555 docker exec -i multitool nc ohdsi-webapi 5005
+# This starts tcpserver (on the host, port 5555) and when the published port is connected to, starts nc in multitool
+# to set up a tcp connection with the debug port (5005) of the ohdsi-webapi container (webapi should have that port configured
+# for debugging, obviously). This can then be used to connect a Java debugger on the host to connect to the webapi process
+# inside the container.
+#
+#  multitool:
+#    image: wbitt/network-multitool:latest
+#    container_name: multitool
+#    extra_hosts:
+#      - "host.docker.internal:host-gateway"
