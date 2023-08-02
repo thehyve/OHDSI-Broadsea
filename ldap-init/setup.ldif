@@ -65,3 +65,22 @@ uid: ppuk
 userpassword: kupp
 mail: ppuk@example.org
 
+
+# create FIRST Level groups branch
+
+dn: ou=groups,dc=example,dc=org
+objectclass:organizationalunit
+ou: groups
+description: generic groups branch
+
+# create the AtlasUsers entry under groups
+# note: the 'ou' entry is essential for LDAP-Atlas synchronization, without it.
+# the group cannot be matches in the group - role logic of WebAPI/Atlas
+
+dn: cn=AtlasUsers,ou=groups,dc=example,dc=org
+objectclass: groupofnames
+cn: AtlasUsers
+ou: AtlasUsers
+description: Atlas admin users
+member: cn=admin,ou=users,dc=example,dc=org
+
