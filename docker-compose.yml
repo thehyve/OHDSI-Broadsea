@@ -78,6 +78,9 @@ services:
       service: ohdsi-webapi
     environment:
       TZ: "${TIMEZONE}"
+      #JAVA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=0.0.0.0:5005"
+    #labels:
+      #- "traefik.http.services.front-web.loadbalancer.server.port=5005"
 
   ohdsi-atlas-from-image:
     profiles: [ "default", "atlas-from-image" ]
@@ -263,7 +266,7 @@ services:
 # This starts tcpserver (on the host, port 5555) and when the published port is connected to, starts nc in multitool
 # to set up a tcp connection with the debug port (5005) of the ohdsi-webapi container (webapi should have that port configured
 # for debugging, obviously). This can then be used to connect a Java debugger on the host to connect to the webapi process
-# inside the container.
+# inside the container. You also need to enable debugging at the service to debug, e.g. webapi
 #
 #  multitool:
 #    image: wbitt/network-multitool:latest
