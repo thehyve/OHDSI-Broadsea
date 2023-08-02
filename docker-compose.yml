@@ -20,6 +20,7 @@ services:
     read_only: true
     environment:
       BROADSEA_HOST: ${BROADSEA_HOST}
+      TZ: "${TIMEZONE}"
     labels:
      - "traefik.enable=true"
     ports:
@@ -40,6 +41,7 @@ services:
       CONTENT_ARES_DISPLAY: ${CONTENT_ARES_DISPLAY}
       CONTENT_ATLAS_DISPLAY: ${CONTENT_ATLAS_DISPLAY}
       CONTENT_HADES_DISPLAY: ${CONTENT_HADES_DISPLAY}
+      TZ: "${TIMEZONE}"
     volumes:
       - ./broadsea-content/images:/usr/share/nginx/html/images
       - ./broadsea-content/style.css:/usr/share/nginx/html/style.css
@@ -57,6 +59,7 @@ services:
     environment:
       - USER=${HADES_USER}
       - PASSWORD=${HADES_PASSWORD}
+      - TZ="${TIMEZONE}"
     volumes:
       - rstudio-home-data:/home
       - rstudio-tmp-data:/tmp
@@ -73,6 +76,8 @@ services:
     extends: 
       file: "ohdsi-webapi.yml"
       service: ohdsi-webapi
+    environment:
+      TZ: "${TIMEZONE}"
 
   ohdsi-atlas-from-image:
     profiles: [ "default", "atlas-from-image" ]
@@ -80,6 +85,8 @@ services:
     extends: 
       file: "ohdsi-atlas.yml"
       service: ohdsi-atlas
+    environment:
+      TZ: "${TIMEZONE}"
 
   # WebAPI and Atlas services based on git repo (for developers) -------------
   ohdsi-webapi-from-git:
@@ -91,6 +98,8 @@ services:
     extends: 
       file: "ohdsi-webapi.yml"
       service: ohdsi-webapi
+    environment:
+      TZ: "${TIMEZONE}"
 
   ohdsi-atlas-from-git:
     profiles: [ "atlas-from-git" ]
@@ -98,6 +107,8 @@ services:
     extends: 
       file: "ohdsi-atlas.yml"
       service: ohdsi-atlas
+    environment:
+      TZ: "${TIMEZONE}"
 
   # -----------------------------------------------------------------
 
@@ -110,6 +121,7 @@ services:
     mem_limit: "2G"
     environment:
       - POSTGRES_PASSWORD=mypass
+      - TZ="${TIMEZONE}"
     ports:
       - "5432:5432"
     volumes:
@@ -133,6 +145,7 @@ services:
         -DVOCAB_JDBC_URL=${VOCAB_JDBC_URL}
         -DVOCAB_JDBC_USER=${VOCAB_JDBC_USER}
         -DVOCAB_JDBC_PASSWORD=${VOCAB_JDBC_PASSWORD}
+      TZ: "${TIMEZONE}"
     volumes:
       - ./${VOCAB_JDBC_FILE_NAME}:/opt/solr-8.11.1/server/lib/${VOCAB_JDBC_FILE_NAME}:ro
       - ./solr:/tmp/solr_config:ro
@@ -170,6 +183,8 @@ services:
       - ${ARES_DATA_FOLDER}:/usr/share/nginx/html/ares/data:ro
     labels:
       - "traefik.enable=true"
+    environment:
+      TZ: "${TIMEZONE}"
 
 
   broadsea-omop-vocab-load:
@@ -185,6 +200,7 @@ services:
       VOCAB_PG_USER: ${VOCAB_PG_USER}
       VOCAB_PG_PASSWORD: ${VOCAB_PG_PASSWORD}
       UMLS_API_KEY: ${UMLS_API_KEY}
+      TZ: "${TIMEZONE}"
     volumes:
       - ./omop_vocab:/tmp
     entrypoint: ["sh", "/tmp/scripts/load_omop_vocab.sh" ]
@@ -202,6 +218,7 @@ services:
       PHOEBE_PG_SCHEMA: ${PHOEBE_PG_SCHEMA}
       PHOEBE_PG_USER: ${PHOEBE_PG_USER}
       PHOEBE_PG_PASSWORD: ${PHOEBE_PG_PASSWORD}
+      TZ: "${TIMEZONE}"
     volumes:
       - ./phoebe:/tmp
     entrypoint: ["sh", "/tmp/load_phoebe.sh" ]
@@ -218,6 +235,7 @@ services:
       - ALLOW_EMPTY_PASSWORD=yes
       - LDAP_TLS=no
       - LDAP_CUSTOM_LDIF_DIR=/tmp/ldifs
+      - TZ="${TIMEZONE}"
     ports:
       - "389:389"
       - "636:636"
@@ -231,6 +249,7 @@ services:
     environment:
       PHPLDAPADMIN_LDAP_HOSTS: "openldap"
       PHPLDAPADMIN_HTTPS: "false"
+      TZ: "${TIMEZONE}"
     ports:
       - "8088:80"
     depends_on:
@@ -251,3 +270,5 @@ services:
 #    container_name: multitool
 #    extra_hosts:
 #      - "host.docker.internal:host-gateway"
+#    environment:
+#      TZ: "${TIMEZONE}"
